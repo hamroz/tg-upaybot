@@ -3,7 +3,6 @@ import json
 import logging
 from datetime import datetime
 from xml.etree import ElementTree
-import time
 import os
 
 # Setup logging
@@ -63,7 +62,7 @@ def fetch_cbr_rates():
 
 def save_rates(rates):
     """
-    Saves rates to JSON file with timestamp.
+    Saves rates to JSON file with current timestamp.
     """
     if rates is None:
         logger.error("No rates to save")
@@ -86,7 +85,7 @@ def save_rates(rates):
 def load_existing_rates():
     """
     Loads existing rates from JSON file.
-    Returns None if file doesn't exist or is too old.
+    Returns rates dictionary if file exists, None otherwise.
     """
     try:
         if not os.path.exists("exchange_rates.json"):
@@ -95,11 +94,8 @@ def load_existing_rates():
         with open("exchange_rates.json", "r") as f:
             data = json.load(f)
             
-        # Check if rates are from today
-        timestamp = datetime.fromisoformat(data.pop("timestamp"))
-        if timestamp.date() != datetime.now().date():
-            return None
-            
+        # Remove timestamp from rates
+        data.pop("timestamp", None)
         return data
     except Exception as e:
         logger.error(f"Error loading existing rates: {e}")
@@ -108,48 +104,39 @@ def load_existing_rates():
 def update_rates():
     """
     Main function to update exchange rates.
-    Only fetches new rates if necessary.
+    Always updates timestamp, preserves rates if API fetch fails.
     """
-    # Try to load existing rates first
+    # Load existing rates
     existing_rates = load_existing_rates()
-    if existing_rates is not None:
-        logger.info("Using existing rates from today")
-        return existing_rates
-
-    # Fetch new rates if needed
-    logger.info("Fetching new rates from CBR")
-    rates = fetch_cbr_rates()
-    if rates is not None:
-        save_rates(rates)
-        return rates
     
-    return None
+    # Fetch new rates
+    logger.info("Fetching new rates from CBR")
+    new_rates = fetch_cbr_rates()
+    
+    if new_rates is None:
+        if existing_rates is None:
+            logger.error("Failed to fetch new rates and no existing rates available")
+            return None
+        
+        logger.warning("Failed to fetch new rates, keeping existing rates with updated timestamp")
+        save_rates(existing_rates)
+        return existing_rates
+    
+    # Save new rates with current timestamp
+    save_rates(new_rates)
+    return new_rates
 
 def main():
     """
-    Main execution function.
-    Can be run as a script or imported and called.
+    Runs the exchange rate update process once and exits.
     """
-    while True:
-        try:
-            rates = update_rates()
-            if rates:
-                logger.info("Current rates:")
-                for currency, rate in rates.items():
-                    logger.info(f"{currency}: {rate:.4f}")
-            else:
-                logger.error("Failed to update rates")
-
-            # Wait for 24 hours before next update
-            # In production, you might want to use a proper scheduler
-            time.sleep(24 * 60 * 60)  # 24 hours
-
-        except KeyboardInterrupt:
-            logger.info("Exchange rate updater stopped")
-            break
-        except Exception as e:
-            logger.error(f"Main loop error: {e}")
-            time.sleep(300)  # Wait 5 minutes before retrying
+    rates = update_rates()
+    if rates:
+        logger.info("Current rates:")
+        for currency, rate in rates.items():
+            logger.info(f"{currency}: {rate:.4f}")
+    else:
+        logger.error("Failed to update rates")
 
 if __name__ == "__main__":
     main()
