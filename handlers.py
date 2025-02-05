@@ -1889,7 +1889,7 @@ def help_command(update: Update, context: CallbackContext) -> int:
             "/contact - Contact support\n"
             "/faq - Frequently asked questions\n"
             "/language - Change language\n\n"
-            "Need help? Contact our support: @support_username\n"
+            "Need help? Contact our support: @UpayManager\n"
         )
     else:
         help_text = (
@@ -1899,7 +1899,7 @@ def help_command(update: Update, context: CallbackContext) -> int:
             "/contact - Связаться с поддержкой\n"
             "/faq - Частые вопросы\n"
             "/language - Изменить язык\n\n"
-            "Нужна помощь? Свяжитесь с поддержкой: @support_username"
+            "Нужна помощь? Свяжитесь с поддержкой: @UpayManager"
         )
     update.message.reply_text(help_text, reply_markup=ReplyKeyboardRemove())
     return MAIN_MENU
@@ -1952,18 +1952,16 @@ def contact_command(update: Update, context: CallbackContext) -> int:
     if lang == "en":
         contact_text = (
             "📞 Contact Us\n\n"
-            "Support Team: @support_username\n"
+            "Support Team: @UpayManager\n"
             "Working hours: 24/7\n\n"
             "For urgent matters:\n"
-            "Email: support@example.com"
         )
     else:
         contact_text = (
             "📞 Связаться с нами\n\n"
-            "Команда поддержки: @support_username\n"
+            "Команда поддержки: @UpayManager\n"
             "Время работы: 24/7\n\n"
             "Для срочных вопросов:\n"
-            "Email: support@example.com"
         )
     update.message.reply_text(contact_text, reply_markup=ReplyKeyboardRemove())
     return MAIN_MENU
