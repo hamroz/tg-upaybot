@@ -1954,14 +1954,12 @@ def contact_command(update: Update, context: CallbackContext) -> int:
             "📞 Contact Us\n\n"
             "Support Team: @UpayManager\n"
             "Working hours: 24/7\n\n"
-            "For urgent matters:\n"
         )
     else:
         contact_text = (
             "📞 Связаться с нами\n\n"
             "Команда поддержки: @UpayManager\n"
             "Время работы: 24/7\n\n"
-            "Для срочных вопросов:\n"
         )
     update.message.reply_text(contact_text, reply_markup=ReplyKeyboardRemove())
     return MAIN_MENU
